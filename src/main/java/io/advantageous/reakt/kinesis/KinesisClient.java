@@ -34,9 +34,22 @@ public class KinesisClient {
 
     }
 
+
+    /**
+     * Creates an Amazon Kinesis stream.
+     *
+     * @param request create stream request
+     * @return Promise of CreateStreamResult.
+     */
+    public Promise<CreateStreamResult> createStream(final CreateStreamRequest request) {
+        return invokablePromise(returnPromise ->
+                amazonKinesisAsyncClient.createStreamAsync(request, convertPromiseToAsyncResult(returnPromise)));
+    }
+
     /**
      * Decreases the Amazon Kinesis stream's retention period, which is the length of time data records
      * are accessible after they are added to the stream.
+     *
      * @param request request
      * @return promise of DecreaseStreamRetentionPeriodResult
      */
@@ -49,44 +62,57 @@ public class KinesisClient {
 
     /**
      * Deletes an Amazon Kinesis stream and all its shards and data.
+     *
      * @param request request
      * @return promise of DeleteStreamResult
      */
-    public Promise<DeleteStreamResult>	deleteStream(final DeleteStreamRequest request) {
-        return invokablePromise(returnPromise-> amazonKinesisAsyncClient.deleteStreamAsync(request,
+    public Promise<DeleteStreamResult> deleteStream(final DeleteStreamRequest request) {
+        return invokablePromise(returnPromise -> amazonKinesisAsyncClient.deleteStreamAsync(request,
                 convertPromiseToAsyncResult(returnPromise)));
     }
 
 
     /**
      * Deletes an Amazon Kinesis stream and all its shards and data.
+     *
      * @param streamName stream name
      * @return promise of DeleteStreamResult
      */
-    public Promise<DeleteStreamResult>	deleteStream(final String streamName) {
-        return invokablePromise(returnPromise-> amazonKinesisAsyncClient.deleteStreamAsync(streamName,
+    public Promise<DeleteStreamResult> deleteStream(final String streamName) {
+        return invokablePromise(returnPromise -> amazonKinesisAsyncClient.deleteStreamAsync(streamName,
                 convertPromiseToAsyncResult(returnPromise)));
     }
 
     /**
-     *
      * @param request request
      * @return promise of DescribeStreamResult
      */
     public Promise<DescribeStreamResult> describeStream(final DescribeStreamRequest request) {
-        return invokablePromise(promise->amazonKinesisAsyncClient.describeStreamAsync(request,
+        return invokablePromise(promise -> amazonKinesisAsyncClient.describeStreamAsync(request,
+                convertPromiseToAsyncResult(promise)));
+    }
+
+
+    /**
+     * @param streamName streamName
+     * @return promise of DescribeStreamResult
+     */
+    public Promise<DescribeStreamResult> describeStream(final String streamName) {
+        return invokablePromise(promise -> amazonKinesisAsyncClient.describeStreamAsync(streamName,
                 convertPromiseToAsyncResult(promise)));
     }
 
     /**
-     * Creates an Amazon Kinesis stream.
-     *
-     * @param request create stream request
-     * @return Promise of CreateStreamResult.
+     * @param streamName            streamName
+     * @param limit                 limit
+     * @param exclusiveStartShardId exclusiveStartShardId
+     * @return promise of DescribeStreamResult
      */
-    public Promise<CreateStreamResult> createStream(final CreateStreamRequest request) {
-        return invokablePromise(returnPromise ->
-                amazonKinesisAsyncClient.createStreamAsync(request, convertPromiseToAsyncResult(returnPromise)));
+    public Promise<DescribeStreamResult> describeStream(final String streamName, final int limit,
+                                                        final String exclusiveStartShardId) {
+        return invokablePromise(promise -> amazonKinesisAsyncClient.describeStreamAsync(streamName, limit,
+                exclusiveStartShardId,
+                convertPromiseToAsyncResult(promise)));
     }
 
     private <REQUEST extends AmazonWebServiceRequest, RESPONSE> AsyncHandler<REQUEST, RESPONSE>
