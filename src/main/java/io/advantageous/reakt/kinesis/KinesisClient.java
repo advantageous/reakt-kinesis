@@ -1,132 +1,86 @@
 package io.advantageous.reakt.kinesis;
 
-import com.amazonaws.AmazonWebServiceRequest;
-import com.amazonaws.handlers.AsyncHandler;
 import com.amazonaws.services.kinesis.AmazonKinesisAsyncClient;
 import com.amazonaws.services.kinesis.model.*;
+import io.advantageous.reakt.kinesis.impl.KinesisClientImpl;
 import io.advantageous.reakt.promise.Promise;
 
-import static io.advantageous.reakt.promise.Promises.invokablePromise;
+import java.nio.ByteBuffer;
 
-public class KinesisClient {
-
-
-    private final AmazonKinesisAsyncClient amazonKinesisAsyncClient;
-
-    public KinesisClient(AmazonKinesisAsyncClient amazonKinesisAsyncClient) {
-        this.amazonKinesisAsyncClient = amazonKinesisAsyncClient;
+public interface KinesisClient {
+    static KinesisClientImpl create(AmazonKinesisAsyncClient amazonKinesisAsyncClient) {
+        return new KinesisClientImpl(amazonKinesisAsyncClient);
     }
 
-    public static KinesisClient create(final AmazonKinesisAsyncClient amazonKinesisAsyncClient) {
-        return new KinesisClient(amazonKinesisAsyncClient);
-    }
+    Promise<AddTagsToStreamResult> addTagsToStream(AddTagsToStreamRequest request);
 
+    Promise<CreateStreamResult> createStream(CreateStreamRequest request);
 
-    /**
-     * Adds or updates tags for the specified Amazon Kinesis stream.
-     *
-     * @param request add tags to stream request
-     * @return promise AddTagsToStreamResult
-     */
-    public Promise<AddTagsToStreamResult> addTagsToStream(final AddTagsToStreamRequest request) {
-        return invokablePromise(returnPromise ->
-                amazonKinesisAsyncClient.addTagsToStreamAsync(request, convertPromiseToAsyncResult(returnPromise)));
+    Promise<DecreaseStreamRetentionPeriodResult> decreaseStreamRetentionPeriod(
+            DecreaseStreamRetentionPeriodRequest request);
 
-    }
+    Promise<DeleteStreamResult> deleteStream(DeleteStreamRequest request);
 
+    Promise<DeleteStreamResult> deleteStream(String streamName);
 
-    /**
-     * Creates an Amazon Kinesis stream.
-     *
-     * @param request create stream request
-     * @return Promise of CreateStreamResult.
-     */
-    public Promise<CreateStreamResult> createStream(final CreateStreamRequest request) {
-        return invokablePromise(returnPromise ->
-                amazonKinesisAsyncClient.createStreamAsync(request, convertPromiseToAsyncResult(returnPromise)));
-    }
+    Promise<DescribeStreamResult> describeStream(DescribeStreamRequest request);
 
-    /**
-     * Decreases the Amazon Kinesis stream's retention period, which is the length of time data records
-     * are accessible after they are added to the stream.
-     *
-     * @param request request
-     * @return promise of DecreaseStreamRetentionPeriodResult
-     */
-    public Promise<DecreaseStreamRetentionPeriodResult> decreaseStreamRetentionPeriod(
-            final DecreaseStreamRetentionPeriodRequest request) {
-        return invokablePromise(returnPromise -> amazonKinesisAsyncClient.decreaseStreamRetentionPeriodAsync(request,
-                convertPromiseToAsyncResult(returnPromise)));
-    }
+    Promise<DescribeStreamResult> describeStream(String streamName);
 
+    Promise<DescribeStreamResult> describeStream(String streamName, int limit,
+                                                 String exclusiveStartShardId);
 
-    /**
-     * Deletes an Amazon Kinesis stream and all its shards and data.
-     *
-     * @param request request
-     * @return promise of DeleteStreamResult
-     */
-    public Promise<DeleteStreamResult> deleteStream(final DeleteStreamRequest request) {
-        return invokablePromise(returnPromise -> amazonKinesisAsyncClient.deleteStreamAsync(request,
-                convertPromiseToAsyncResult(returnPromise)));
-    }
+    Promise<DisableEnhancedMonitoringResult> disableEnhancedMonitoring(
+            DisableEnhancedMonitoringRequest request);
 
+    Promise<EnableEnhancedMonitoringResult> enableEnhancedMonitoring(
+            EnableEnhancedMonitoringRequest request);
 
-    /**
-     * Deletes an Amazon Kinesis stream and all its shards and data.
-     *
-     * @param streamName stream name
-     * @return promise of DeleteStreamResult
-     */
-    public Promise<DeleteStreamResult> deleteStream(final String streamName) {
-        return invokablePromise(returnPromise -> amazonKinesisAsyncClient.deleteStreamAsync(streamName,
-                convertPromiseToAsyncResult(returnPromise)));
-    }
+    Promise<GetRecordsResult> getRecords(GetRecordsRequest request);
 
-    /**
-     * @param request request
-     * @return promise of DescribeStreamResult
-     */
-    public Promise<DescribeStreamResult> describeStream(final DescribeStreamRequest request) {
-        return invokablePromise(promise -> amazonKinesisAsyncClient.describeStreamAsync(request,
-                convertPromiseToAsyncResult(promise)));
-    }
+    Promise<GetShardIteratorResult> getShardIteratorAsync(GetShardIteratorRequest request);
 
+    Promise<GetShardIteratorResult> getShardIteratorAsync(String streamName, String shardId,
+                                                          String shardIteratorType);
 
-    /**
-     * @param streamName streamName
-     * @return promise of DescribeStreamResult
-     */
-    public Promise<DescribeStreamResult> describeStream(final String streamName) {
-        return invokablePromise(promise -> amazonKinesisAsyncClient.describeStreamAsync(streamName,
-                convertPromiseToAsyncResult(promise)));
-    }
+    Promise<GetShardIteratorResult> getShardIteratorAsync(String streamName, String shardId,
+                                                          String shardIteratorType,
+                                                          String startingSequenceNumber);
 
-    /**
-     * @param streamName            streamName
-     * @param limit                 limit
-     * @param exclusiveStartShardId exclusiveStartShardId
-     * @return promise of DescribeStreamResult
-     */
-    public Promise<DescribeStreamResult> describeStream(final String streamName, final int limit,
-                                                        final String exclusiveStartShardId) {
-        return invokablePromise(promise -> amazonKinesisAsyncClient.describeStreamAsync(streamName, limit,
-                exclusiveStartShardId,
-                convertPromiseToAsyncResult(promise)));
-    }
+    Promise<IncreaseStreamRetentionPeriodResult> increaseStreamRetentionPeriod(
+            IncreaseStreamRetentionPeriodRequest request);
 
-    private <REQUEST extends AmazonWebServiceRequest, RESPONSE> AsyncHandler<REQUEST, RESPONSE>
-    convertPromiseToAsyncResult(final Promise<RESPONSE> returnPromise) {
-        return new AsyncHandler<REQUEST, RESPONSE>() {
-            @Override
-            public void onError(Exception exception) {
-                returnPromise.reject(exception);
-            }
+    Promise<ListStreamsResult> listStreams();
 
-            @Override
-            public void onSuccess(REQUEST request, RESPONSE response) {
-                returnPromise.resolve(response);
-            }
-        };
-    }
+    Promise<ListStreamsResult> listStreams(int limit, String exclusiveStartStreamName);
+
+    Promise<ListStreamsResult> listStreams(String exclusiveStartStreamName);
+
+    Promise<ListStreamsResult> listStreams(ListStreamsRequest request);
+
+    Promise<ListTagsForStreamResult> listTagsForStream(ListTagsForStreamRequest request);
+
+    Promise<MergeShardsResult> mergeShards(MergeShardsRequest request);
+
+    Promise<MergeShardsResult> mergeShards(String streamName, String shardToMerge,
+                                           String adjacentShardToMerge);
+
+    Promise<PutRecordResult> putRecord(PutRecordRequest request);
+
+    Promise<PutRecordResult> putRecord(String streamName, ByteBuffer data,
+                                       String partitionKey);
+
+    Promise<PutRecordResult> putRecord(String streamName, ByteBuffer data,
+                                       String partitionKey, String sequenceNumberForOrdering);
+
+    Promise<PutRecordsResult> putRecords(PutRecordsRequest request);
+
+    Promise<RemoveTagsFromStreamResult> removeTagsFromStream(RemoveTagsFromStreamRequest request);
+
+    Promise<SplitShardResult> splitShardAsync(SplitShardRequest request);
+
+    Promise<SplitShardResult> splitShardAsync(String streamName, String shardToSplit,
+                                              String newStartingHashKey);
+
+    AmazonKinesisAsyncClient getAmazonKinesisAsyncClient();
 }
